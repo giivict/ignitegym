@@ -1,11 +1,15 @@
 import { useNavigation } from "@react-navigation/native";
-import { VStack, Image, Center, Text, Heading, ScrollView } from "@gluestack-ui/themed";
+import { VStack, Image, Center, Text, Heading, ScrollView, useToast, Toast, ToastTitle } from "@gluestack-ui/themed";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 
+import { api } from "../services/api";
+
 import Logo from '@assets/logo.svg'
 import BackgroundImg from "@assets/background.png"
+
+import { AppError } from "@utils/AppError";
 
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
@@ -19,23 +23,24 @@ type FormDataProps = {
 
 const signUpSchema = yup.object({
     name: yup
-    .string()
-    .required('Informe o nome'),
+        .string()
+        .required('Informe o nome'),
     email: yup
-    .string()
-    .required('Informe o e-mail')
-    .email('E-mail inválido'),
+        .string()
+        .required('Informe o e-mail')
+        .email('E-mail inválido'),
     password: yup
-    .string()
-    .required('Informe a senha')
-    .min(6, 'A senha deve ter pelo menos 6 dígitos'),
+        .string()
+        .required('Informe a senha')
+        .min(6, 'A senha deve ter pelo menos 6 dígitos'),
     password_confirm: yup
-    .string()
-    . required('Confirme a senha')
-    .oneOf([yup.ref("password"), ""], "A confirmaçaõ de senha não confere")
+        .string()
+        .required('Confirme a senha')
+        .oneOf([yup.ref("password"), ""], "A confirmaçaõ de senha não confere")
 })
 
 export function SignUp() {
+    const toast = useToast()
 
     const { control, handleSubmit, formState: { errors } } = useForm<FormDataProps>({
         resolver: yupResolver(signUpSchema)
@@ -47,8 +52,24 @@ export function SignUp() {
         navigation.goBack()
     }
 
-    function handleSignUp({ name, email, password, password_confirm }: FormDataProps) {
-        console.log({ name, email, password, password_confirm });
+    async function handleSignUp({ name, email, password }: FormDataProps) {
+        try {
+            const response = await api.post('/users', { name, email, password });
+
+        } catch (error) {
+            const isAppError = error instanceof AppError;
+            const title = isAppError ? error.message : 'Não foi possível criar conta, tente novamente mais tarde.'
+
+            toast.show({
+                placement: "top",
+                render: () => (
+                  <Toast backgroundColor='$red500' action="error" variant="outline">
+                    <ToastTitle  color="$white">{title}</ToastTitle>
+                  </Toast>
+                ),
+                
+            });
+        }
     }
 
     return (

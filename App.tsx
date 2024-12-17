@@ -1,5 +1,5 @@
 import { StatusBar } from 'react-native';
-import { 
+import {
   useFonts,
   Roboto_700Bold,
   Roboto_400Regular,
@@ -7,12 +7,14 @@ import {
 
 import { GluestackUIProvider, Text, Center } from '@gluestack-ui/themed';
 
+import { AuthContextProvider } from '@contexts/AuthContext';
+
 import { Routes } from '@routes/index';
 import { config } from './config/gluestack-ui.config';
 import { Loading } from '@components/Loading';
 
 export default function App() {
-const [fontsLoaded] = useFonts({Roboto_700Bold, Roboto_400Regular})
+  const [fontsLoaded] = useFonts({ Roboto_700Bold, Roboto_400Regular })
 
   return (
     <GluestackUIProvider config={config}>
@@ -22,7 +24,9 @@ const [fontsLoaded] = useFonts({Roboto_700Bold, Roboto_400Regular})
         translucent
       />
 
-      {fontsLoaded ? <Routes /> : <Loading />}
+      <AuthContextProvider>
+        {fontsLoaded ? <Routes /> : <Loading />}
+      </AuthContextProvider>
 
     </GluestackUIProvider>
   );
